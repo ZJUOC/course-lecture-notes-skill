@@ -1,0 +1,37 @@
+"""由 ADHD 版生成 ADHD 概念图版：荧光标注不变，右上换成 目录 + 概念关系图，右下留给手写笔记窗口。
+
+用法：先跑 make_adhd.py，再 python3 make_concept.py（通常由 derive.py 调用）
+概念与关系是手工整理的，在 ROOT/制作记录/概念关系/<课程>.txt；本脚本先校验，再把数据嵌进页面。
+手写区默认尺寸取自 Trackpad Studio 手写小窗（trackpad_ink.py），读不到时用 750×470。
+输入：ROOT/NN *（ADHD版）.html；输出：ROOT/NN *（ADHD概念图版）.html。ADHD 版本身不改动。
+"""
+import hashlib, json, re, sys
+from common import ROOT, COURSES
+from concept_map import build
+from trackpad_ink import ink_size
+
+T = ROOT / 'ADHD工具'
+ver = hashlib.sha1(b''.join((T / f).read_bytes() for f in ('adhd.css', 'concept.css', 'concept.js'))).hexdigest()[:8]
+
+iw, ih, src = ink_size()
+print(f'手写区默认 {iw}×{ih}（{src}）')
+for c in COURSES:
+    if not (ROOT / '制作记录' / '概念关系' / f'{c}.txt').exists():
+        print(c, '没有概念关系文件，跳过')
+        continue
+    data, probs = build(c)
+    hard = [p for p in probs if '定位词' not in p]
+    if hard:
+        print(c, '概念关系有错：', *hard, sep='\n  ')
+        sys.exit(1)
+    h = (ROOT / f'{c}（ADHD版）.html').read_text()
+    blob = json.dumps(data, ensure_ascii=False).replace('</', '<\\/')
+    h, n1 = re.subn(r'<script src="ADHD工具/adhd\.js\?v=\w+"></script>',
+                    f'<script id="concept-data" type="application/json" data-ink="{iw}x{ih}">{blob}</script>'
+                    f'<script src="ADHD工具/concept.js?v={ver}"></script>', h)
+    h, n2 = re.subn(r'(<link href="ADHD工具/adhd\.css\?v=)\w+(" rel="stylesheet"/>)',
+                    rf'\g<1>{ver}\2<link href="ADHD工具/concept.css?v={ver}" rel="stylesheet"/>', h)
+    h, n3 = re.subn(r'（ADHD版）</title>', '（ADHD概念图版）</title>', h)
+    assert n1 == n2 == n3 == 1, (c, n1, n2, n3)
+    (ROOT / f'{c}（ADHD概念图版）.html').write_text(h)
+    print(c, 'ok', f'{len(probs)} 处定位退回标题' if probs else '')

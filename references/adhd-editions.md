@@ -1,0 +1,45 @@
+# ADHD 派生版本（讲义构建后再做）
+
+原讲义 `NN 课程.html` 不动，脚本派生三套新文件。读者正在用的版本不要直接改：要改版面时先出草图，确认后生成新的一套。
+
+| 文件 | 内容 | 脚本 |
+|---|---|---|
+| `NN 课程（ADHD版）.html` | 按句子作用分色荧光标注（结论/方法/例子/易错/概念），右侧阅读地图 | `make_adhd.py` |
+| `NN 课程（ADHD大纲版）.html` | 标注相同，右侧换成跟随阅读位置的概念大纲 | `make_outline.py` |
+| `NN 课程（ADHD概念图版）.html` | 右上：目录 和 当前小节的概念关系图并排（1:2）；右下：留给手写小窗 | `make_concept.py` |
+
+一条命令：`python3 $S/adhd/derive.py`（改了概念关系只跑 `derive.py concept`）。脚本先把 `assets/adhd/*.css|js` 同步到 `ROOT/ADHD工具/`，页面里的链接带内容哈希，不会读到缓存。
+
+## 标注修订
+`ROOT/制作记录/ADHD标注修订.json`：`{"句子开头若干字": "none|thesis|claim|evidence|counter|term"}`。报告在 `ADHD标注报告.json`，每类有抽样句，只看抽样就能判断规则是否跑偏。
+
+## 概念关系（手工整理，不能自动抽取）
+文件：`ROOT/制作记录/概念关系/<课程>.txt`，每节一块：
+
+```
+@小节id
+概念名 | 依赖1:边标签, 依赖2 | 原文定位词
+用到: 概念A, 概念B          # 练习、例题小节只写这一行
+```
+
+- 只收最基本的概念：读者要的是“有哪些概念、谁用到谁”，不要定理细节、易错点。每节 1—4 个概念为宜。
+- 箭头 A → B 表示 B 用到 A。依赖必须在本节或前面的小节已经定义；跨节依赖页面上显示为“← A”。
+- 依赖之间用“逗号+空格”分隔，所以 `u(x,y)` 这类名字安全；边标签里不要写“, ”。
+- 定位词要在该小节原文中出现（忽略空白），点概念时跳到这里；找不到就退回小节标题（只是警告）。
+- 起草流程（省 token）：
+  1. `python3 $S/adhd/concept_map.py skeleton "<课程>"`：每节只列 id、标题、加粗词、语义块标题，✓ 表示已整理。看这个起草，不读整页 HTML。
+  2. 一门课的 txt 一次写完。
+  3. `python3 $S/adhd/concept_map.py`：校验全部课程，只打印统计和问题。
+  4. `python3 $S/adhd/derive.py concept`。
+
+## 手写区与 Mac 触控板手写笔记
+概念图版右下的虚线框给 [Mac 触控板手写笔记（Trackpad Studio 手写）](https://github.com/chinayuren2022-2025/mac-trackpad-notes) 的小窗（⌃⌥N 呼出）让位。
+
+- `make_concept.py` 生成时调用 `trackpad_ink.py`，从 App 的 defaults（`NSWindow Frame FloatingNotePanel`）读出小窗宽高，写进页面 `data-ink="宽x高"` 作为默认值。没装 App 或读不到时用 750×470。
+- 读者在页面上拖虚线框左上角的紫点会覆盖默认值（按页面记在 localStorage）；双击紫点回到小窗尺寸。
+- 改了小窗大小后，重跑 `derive.py concept` 即可同步。
+
+## 已知的坑
+1. 内置浏览器窗格隐藏时不派发 scroll 事件、暂停 requestAnimationFrame，截图是空白。滚动跟随用 setTimeout 节流，并在 scrollend、load 时再同步一次；测试时 `dispatchEvent(new Event('scroll'))`，用 DOM 读数（getBoundingClientRect、类名）代替截图。
+2. 本地预览端口 8765 可能被别的程序占用，换端口自己起 `python3 -m http.server`，测完关掉。
+3. 测完清掉 localStorage 里 `adhd-` 开头的键，免得测试状态留给读者。
