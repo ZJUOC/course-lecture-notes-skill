@@ -37,6 +37,19 @@ pd=c.get('pandoc') or shutil.which('pandoc') or os.path.expanduser('~/anaconda3/
 p=subprocess.run(args,capture_output=True,text=True,check=True)
 html=re.sub(r'<colgroup>.*?</colgroup>','',out.read_text(),flags=re.S)
 html=re.sub(r'<p>(<math display="block".*?</math>)</p>',r'<div class="display math">\1</div>',html,flags=re.S)
+# \bar / \overline：Chrome 的 MathML 横线紧贴字母（\overline 还缩成一小段），换成 CSS 上边框，宽度随内容、留出间隙
+OVL='<mrow style="border-top:0.065em solid;padding-top:0.18em;margin-top:0.05em">'
+def overline(h):
+    pat=re.compile(r'<mo accent="true">[‾¯]</mo></mover>')
+    while (m:=pat.search(h)):
+        d=0
+        for t in reversed(list(re.finditer(r'<mover>|</mover>',h[:m.start()]))):
+            if t.group()=='</mover>':d+=1
+            elif d:d-=1
+            else:h=h[:t.start()]+OVL+h[t.end():m.start()]+'</mrow>'+h[m.end():];break
+        else:raise ValueError('unbalanced mover')
+    return h
+html=overline(html)
 soup=BeautifulSoup(html,'html.parser');main=soup.main
 legend=BeautifulSoup('<div class="legend" aria-label="内容颜色说明"><span class="definition">定义</span><span class="theorem">定理</span><span class="result">结论</span><span class="example">例题</span><span class="warning">易错</span></div>','html.parser').div
 main.find('h1').find_next_sibling('p').insert_after(legend)
