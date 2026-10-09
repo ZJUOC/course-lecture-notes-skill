@@ -16,6 +16,7 @@ ROOT = 项目根目录：环境变量 `LECTURE_ROOT`，未设时为 `~/Library/M
 3. **图先看总览**：contact sheet 一张 20 图，只放大关键帧。
 4. **写一次，查摘要**：正文每块一次 Write；构建、核验、QA 都看脚本打印的摘要和 json 中的计数，不重读成品 HTML。改错用 `grep -n` 定位后 Edit，不整文件重读。
 5. **概念关系看骨架**：`adhd/concept_map.py skeleton` 只列小节 id、标题、加粗词，起草概念图用它，不读整页。
+   词语荧光同理：读一行一段的纯文本导出，`keywords.py` 只看匹配数和问题。
 6. **验收看数字不看图**：桌面 QA 用 `desktop_qa.py` 的 PASS；浏览器里用 DOM 读数代替截图。用户说过“验收不用做”时，跳过可选的浏览器检查。
 7. **不派子代理**做讲义正文、看图、自绘图（冷启动要重读上下文，且禁止用 Haiku 等小模型）。
 8. 版面改动先给草图；不在读者正在用的文件上改，生成新文件。
@@ -34,7 +35,7 @@ ROOT = 项目根目录：环境变量 `LECTURE_ROOT`，未设时为 `~/Library/M
 10. **构建**：写 `ROOT/制作记录/<课程>构建配置.json`（字段见 `build_lecture.py` 顶部），`python3 $S/build_lecture.py <config>`。
 11. **数学核验**：写 `ROOT/制作记录/validate_<课程>.py`，用 fractions/sympy/枚举/模拟独立复核**每个数值结论和练习答案**，输出 json 报告。
 12. **桌面验收**：`python3 $S/desktop_qa.py "ROOT/<输出>.html" ROOT/制作记录/output/playwright/<课程> <锚点id...>`，要求 `PASS: true`；只抽看 3—4 张截图。
-13. **ADHD 派生版本**：补写或更新 `ROOT/制作记录/概念关系/<课程>.txt`（见 adhd-editions），然后 `python3 $S/adhd/derive.py`。
+13. **ADHD 派生版本**：补写或更新 `ROOT/制作记录/概念关系/<课程>.txt`、`ROOT/制作记录/词语荧光/<课程>.txt`（见 adhd-editions），然后 `python3 $S/adhd/derive.py`。
 14. **收尾**：更新 `开始阅读.html`、`00 阅读指南.md` 中该课程那一行；写 `制作记录/NN <课程>重构记录.md`（材料哈希前 12 位、范围、纠错、练习与教材题号对照、核验结果、新经验）；在 `03 决策与修订日志.md` 末尾追加一段；更新 `AGENTS.md` 的课程状态。新经验同时补进本 Skill 的 references。
 
 ## 交付说明

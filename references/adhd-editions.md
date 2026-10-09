@@ -32,6 +32,15 @@
   3. `python3 $S/adhd/concept_map.py`：校验全部课程，只打印统计和问题。
   4. `python3 $S/adhd/derive.py concept`。
 
+## 词语荧光（手工挑选，可选）
+概念图版正文里，每段给一到三个撑起句子的词（主题、转折对比、结论）加一道窄荧光，帮助跳读；不解释含义。
+
+- 数据：`ROOT/制作记录/词语荧光/<课程>.txt`，每行 `段落前缀 || 词1 | 词2 | 词3`，按页面顺序。前缀可取段内任意一段原文（忽略空白，公式写成 `$tex$`），从上一行匹配到的段落往后找。没有这个文件的课程不加。
+- 词不能跨公式或行内标签；已在 `<strong>` 里的词计为“原本已加粗”跳过。纯公式段、短答案段不标。
+- 起草（省 token）：先把段落导出成“一行一段”的纯文本（`keywords.plain()`），一次读完，一门课写一个 txt；`python3 $S/adhd/keywords.py [课程]` 只打印匹配数和问题，按问题改词（多半是词里含公式或跨了加粗），不读页面。
+- 生成：`make_concept.py` 自动调用 `keywords.apply`，输出里显示“词语荧光 N 处”。
+- 样式：`concept.css` 的 `mark.kw` 与 `html[data-kw=amber|coral|green|blue|pink|bold|big|off]`；`concept.js` 在左下圆点前加“词”按钮和弹出菜单，选择记在页面状态 `st.kw`。
+
 ## 手写区与 Mac 触控板手写笔记
 概念图版右下的虚线框给 [Mac 触控板手写笔记（Trackpad Studio 手写）](https://github.com/chinayuren2022-2025/mac-trackpad-notes) 的小窗（⌃⌥N 呼出）让位。
 
