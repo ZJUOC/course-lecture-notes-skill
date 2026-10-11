@@ -130,9 +130,9 @@ addEventListener('scrollend',spy);addEventListener('load',()=>setTimeout(spy,50)
 const dots=box.querySelector('.dots');
 for(const [c,n] of CATS){const b=document.createElement('button');b.className='dot hl-'+c;b.dataset.c=c;b.textContent=n;b.title='开关'+n+'荧光';
   b.onclick=()=>{const i=st.off.indexOf(c);i<0?st.off.push(c):st.off.splice(i,1);apply()};dots.append(b)}
-/* 词语荧光（mark.kw，手工挑选的句子骨架词）：可选荧光颜色，或只加粗、加大，或关闭 */
+/* 词语荧光（mark.kw 手工挑选的句子骨架词；mark.kw2 按分句自动补的浅一档荧光）：可选荧光颜色，或只加粗、加大，或关闭；“密”按钮开关 kw2 */
 const KW=[['amber','琥珀'],['coral','橙红'],['green','青绿'],['blue','天蓝'],['pink','粉紫'],['bold','加粗'],['big','加大'],['off','关闭']];
-const hasKw=!!document.querySelector('main mark.kw');
+const hasKw=!!document.querySelector('main mark.kw, main mark.kw2'),hasKw2=!!document.querySelector('main mark.kw2');
 if(hasKw){
   const w=document.createElement('span');w.className='kwpick';
   w.innerHTML='<button class="kwbtn" title="词语荧光样式">词</button><span class="kwmenu" hidden></span>';
@@ -141,13 +141,18 @@ if(hasKw){
     b.onclick=()=>{st.kw=k;menu.hidden=true;apply()};menu.append(b)}
   w.querySelector('.kwbtn').onclick=e=>{e.stopPropagation();menu.hidden=!menu.hidden};
   document.addEventListener('click',e=>{if(!w.contains(e.target))menu.hidden=true});
+  if(hasKw2){const b=document.createElement('button');b.className='kwdbtn';b.textContent='密';
+    b.title='密集荧光：每句隔几个词自动补一处浅荧光（点一下开关）';
+    b.onclick=()=>{st.kwd=st.kwd==='sparse'?'dense':'sparse';apply()};w.append(b)}
   dots.prepend(w);
 }
 function apply(){
   for(const [c] of CATS)root.classList.toggle('off-'+c,st.off.includes(c));
   if(hasKw){const k=st.kw||'amber';root.dataset.kw=k;
     dots.querySelector('.kwbtn').className='kwbtn kw-'+k;
-    dots.querySelectorAll('.kwopt').forEach(b=>b.classList.toggle('on',b.dataset.k===k))}
+    dots.querySelectorAll('.kwopt[data-k]').forEach(b=>b.classList.toggle('on',b.dataset.k===k));
+    const d=st.kwd||'dense';root.dataset.kwd=d;const t=dots.querySelector('.kwdbtn');
+    if(t){t.setAttribute('aria-pressed',String(d==='dense'));t.classList.toggle('on',d==='dense')}}
   dots.querySelectorAll('.dot[data-c]').forEach(b=>b.setAttribute('aria-pressed',String(!st.off.includes(b.dataset.c))));
   root.classList.toggle('ink-on',st.ink);box.querySelector('.inkbtn').classList.toggle('on',st.ink);
   root.style.setProperty('--ink-w',st.iw+'px');root.style.setProperty('--ink-h',st.ih+'px');

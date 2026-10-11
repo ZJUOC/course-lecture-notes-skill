@@ -2,18 +2,20 @@
 
 用法：先跑 make_adhd.py，再 python3 make_concept.py（通常由 derive.py 调用）
 概念与关系是手工整理的，在 ROOT/制作记录/概念关系/<课程>.txt；本脚本先校验，再把数据嵌进页面。
-词语荧光（可选）：ROOT/制作记录/词语荧光/<课程>.txt，见 keywords.py。
+词语荧光（可选）：ROOT/制作记录/词语荧光/<课程>.txt，见 keywords.py；之后按分句自动补密集荧光（dense.py，LECTURE_DENSE=0 关闭）。
 手写区默认尺寸取自 Trackpad Studio 手写小窗（trackpad_ink.py），读不到时用 750×470。
 输入：ROOT/NN *（ADHD版）.html；输出：ROOT/NN *（ADHD概念图版）.html。ADHD 版本身不改动。
 """
-import hashlib, json, re, sys
+import hashlib, json, os, re, sys
 from common import ROOT, COURSES
 from concept_map import build
 from trackpad_ink import ink_size
 from keywords import apply as kw_apply
+from dense import apply as dense_apply
 from bs4 import BeautifulSoup
 
 T = ROOT / 'ADHD工具'
+DENSE = os.environ.get('LECTURE_DENSE', '1') != '0'  # 密集词语荧光，见 dense.py
 ver = hashlib.sha1(b''.join((T / f).read_bytes() for f in ('adhd.css', 'concept.css', 'concept.js'))).hexdigest()[:8]
 
 iw, ih, src = ink_size()
@@ -38,11 +40,13 @@ for c in COURSES:
     h, n3 = re.subn(r'（ADHD版）</title>', '（ADHD概念图版）</title>', h)
     assert n1 == n2 == n3 == 1, (c, n1, n2, n3)
     kw = ''
+    soup = BeautifulSoup(h, 'html.parser')
     if (ROOT / '制作记录' / '词语荧光' / f'{c}.txt').exists():
-        soup = BeautifulSoup(h, 'html.parser')
         done, bold, miss = kw_apply(soup, c)
-        h = str(soup)
         kw = f'词语荧光 {done} 处' + (f'，{len(miss)} 个问题：' + '；'.join(miss) if miss else '')
+    if DENSE:
+        kw += f'  密集荧光 {dense_apply(soup, c)} 处'
+    h = str(soup)
     (ROOT / f'{c}（ADHD概念图版）.html').write_text(h)
     print(c, 'ok', f'{len(probs)} 处定位退回标题' if probs else '', kw)
 if missing:

@@ -41,6 +41,14 @@
 - 生成：`make_concept.py` 自动调用 `keywords.apply`，输出里显示“词语荧光 N 处”。
 - 样式：`concept.css` 的 `mark.kw` 与 `html[data-kw=amber|coral|green|blue|pink|bold|big|off]`；`concept.js` 在左下圆点前加“词”按钮和弹出菜单，选择记在页面状态 `st.kw`。
 
+### 密集荧光（自动，默认开）
+用户反馈：只有每段一到三个词仍然读不下去，要“每句话隔几个词就有标记”，而且不必有严格的意义。所以在手工词语荧光之后，`dense.py` 按分句自动补浅一档的荧光 `mark.kw2`：
+
+- 按中文标点切分句，公式、加粗、已有荧光不动；jieba 分词，名词、动名词、实义动词、成语优先，相邻名词合并；加粗术语、概念关系里的概念名、手工荧光词作为词典并加分。
+- 密度：分句约每 6 个汉字一处，最多 4 处；紧挨已有标记的短分句少标一个。复变约每 14 字一处（加上手工词更密）。
+- 不需要数据文件，没写词语荧光 txt 的课程也会有；`LECTURE_DENSE=0` 时不生成。试跑：`python3 $S/adhd/dense.py <课程>` 只打印统计和样例。
+- 页面：左下“词”按钮旁的“密”按钮开关密集荧光（`st.kwd`，`html[data-kwd=sparse]` 时 kw2 不显示）；“词”菜单的颜色、加粗、加大、关闭对两档都生效。
+
 ## 手写区与 Mac 触控板手写笔记
 概念图版右下的虚线框给 [Mac 触控板手写笔记（Trackpad Studio 手写）](https://github.com/chinayuren2022-2025/mac-trackpad-notes) 的小窗（⌃⌥N 呼出）让位。
 

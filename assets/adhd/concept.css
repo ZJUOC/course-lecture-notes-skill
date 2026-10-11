@@ -65,6 +65,11 @@ html.ink-drag{user-select:none}
 html[data-kw=coral]{--kw:rgba(255,112,82,.5)}html[data-kw=green]{--kw:rgba(46,196,128,.42)}
 html[data-kw=blue]{--kw:rgba(66,153,255,.42)}html[data-kw=pink]{--kw:rgba(226,104,214,.4)}
 mark.kw{color:#1b2130;font-weight:600;padding:0 .04em;border-radius:2px;background:linear-gradient(transparent 56%,var(--kw) 56%);-webkit-box-decoration-break:clone;box-decoration-break:clone}
+mark.kw2{color:inherit;font-weight:600;padding:0 .02em;background:linear-gradient(transparent 62%,color-mix(in srgb,var(--kw) 55%,transparent) 62%);-webkit-box-decoration-break:clone;box-decoration-break:clone}
+html[data-kw=bold] mark.kw2,html[data-kw=big] mark.kw2{background:none;font-weight:700;color:#1b2130}
+html[data-kw=off] mark.kw2,html[data-kwd=sparse] mark.kw2{background:none;font-weight:inherit;color:inherit}
+#cmap .kwpick{gap:4px}#cmap .kwdbtn{border:1px solid #d6dae3;border-radius:6px;padding:0 6px;font-size:11.5px;font-weight:700;color:#8a91a0;background:#fff}
+#cmap .kwdbtn.on{color:#1b2130;border-color:transparent;background:linear-gradient(transparent 45%,color-mix(in srgb,var(--kw) 55%,transparent) 45%),#f0f1f5}
 html[data-kw=bold] mark.kw{background:none;font-weight:800;color:#11151f}
 html[data-kw=big] mark.kw{background:none;font-weight:800;color:#11151f;font-size:1.13em}
 html[data-kw=off] mark.kw{background:none;font-weight:inherit;color:inherit;font-size:inherit}

@@ -35,7 +35,7 @@ ROOT = 项目根目录：环境变量 `LECTURE_ROOT`，未设时为 `~/Library/M
 10. **构建**：写 `ROOT/制作记录/<课程>构建配置.json`（字段见 `build_lecture.py` 顶部），`python3 $S/build_lecture.py <config>`。
 11. **数学核验**：写 `ROOT/制作记录/validate_<课程>.py`，用 fractions/sympy/枚举/模拟独立复核**每个数值结论和练习答案**，输出 json 报告。
 12. **桌面验收**：`python3 $S/desktop_qa.py "ROOT/<输出>.html" ROOT/制作记录/output/playwright/<课程> <锚点id...>`，要求 `PASS: true`；只抽看 3—4 张截图。
-13. **ADHD 派生版本**：先 `python3 $S/adhd/concept_map.py skeleton "<课程>"`，按骨架**手工写** `ROOT/制作记录/概念关系/<课程>.txt`（必做，没有它就不会生成概念图版：右上目录和概念关系图都没有）；再写 `ROOT/制作记录/词语荧光/<课程>.txt`（见 adhd-editions），然后 `python3 $S/adhd/derive.py`。输出里出现“⚠ 没有生成概念图版”就是 txt 还没写，补上后跑 `derive.py concept`。
+13. **ADHD 派生版本**：先 `python3 $S/adhd/concept_map.py skeleton "<课程>"`，按骨架**手工写** `ROOT/制作记录/概念关系/<课程>.txt`（必做，没有它就不会生成概念图版：右上目录和概念关系图都没有）；再写 `ROOT/制作记录/词语荧光/<课程>.txt`（见 adhd-editions），然后 `python3 $S/adhd/derive.py`（密集荧光由 `dense.py` 自动补，不用写数据）。输出里出现“⚠ 没有生成概念图版”就是 txt 还没写，补上后跑 `derive.py concept`。
 14. **收尾**：更新 `开始阅读.html`、`00 阅读指南.md` 中该课程那一行；写 `制作记录/NN <课程>重构记录.md`（材料哈希前 12 位、范围、纠错、练习与教材题号对照、核验结果、新经验）；在 `03 决策与修订日志.md` 末尾追加一段；更新 `AGENTS.md` 的课程状态。新经验同时补进本 Skill 的 references。
 
 ## 交付说明
