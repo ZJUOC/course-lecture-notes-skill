@@ -18,9 +18,10 @@ ver = hashlib.sha1(b''.join((T / f).read_bytes() for f in ('adhd.css', 'concept.
 
 iw, ih, src = ink_size()
 print(f'手写区默认 {iw}×{ih}（{src}）')
+missing = []
 for c in COURSES:
     if not (ROOT / '制作记录' / '概念关系' / f'{c}.txt').exists():
-        print(c, '没有概念关系文件，跳过')
+        missing.append(c)
         continue
     data, probs = build(c)
     hard = [p for p in probs if '定位词' not in p]
@@ -44,3 +45,7 @@ for c in COURSES:
         kw = f'词语荧光 {done} 处' + (f'，{len(miss)} 个问题：' + '；'.join(miss) if miss else '')
     (ROOT / f'{c}（ADHD概念图版）.html').write_text(h)
     print(c, 'ok', f'{len(probs)} 处定位退回标题' if probs else '', kw)
+if missing:
+    print('⚠ 以下课程没有生成概念图版（没有右上目录和概念关系图）：', '、'.join(missing))
+    print('  概念关系要手工整理：先跑 concept_map.py skeleton "<课程>" 看小节骨架，')
+    print('  写 ROOT/制作记录/概念关系/<课程>.txt（格式见 references/adhd-editions.md），再跑 derive.py concept')
