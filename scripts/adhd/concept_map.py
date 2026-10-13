@@ -2,7 +2,7 @@
 
 格式：
   @小节id
-  概念名 | 依赖1:边标签, 依赖2 | 原文定位词
+  概念名 | 依赖1:边标签, 依赖2 | 原文定位词 | 一行注解（可省；写了就在正文插概念小标题，见 wisdom.py）
   用到: 概念A, 概念B
 
 用法：python3 concept_map.py            校验全部课程
@@ -44,7 +44,8 @@ def parse(path):
                 else:
                     deps.append([d, ''])
         loc = parts[2] if len(parts) > 2 and parts[2] else name
-        secs[cur]['nodes'].append({'n': name, 'd': deps, 'at': loc, 'ln': ln})
+        note = parts[3] if len(parts) > 3 else ''
+        secs[cur]['nodes'].append({'n': name, 'd': deps, 'at': loc, 'ln': ln, 'note': note})
     return secs, order
 
 

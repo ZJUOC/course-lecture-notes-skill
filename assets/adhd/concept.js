@@ -36,7 +36,7 @@ function locate(sid,word){
 function jump(el){if(!el)return;const d=el.closest('details');if(d)d.open=true;
   el.scrollIntoView({behavior:'smooth',block:/^H/.test(el.tagName)?'start':'center'});
   el.classList.add('flash');setTimeout(()=>el.classList.remove('flash'),1600)}
-const goConcept=name=>{const sid=secOf.get(name);if(!sid)return;const n=DATA[sid].nodes.find(x=>x.n===name);jump(locate(sid,n.at))};
+const goConcept=name=>{const hd=[...main.querySelectorAll('.cpt-head')].find(e=>e.dataset.c===name);if(hd)return jump(hd);const sid=secOf.get(name);if(!sid)return;const n=DATA[sid].nodes.find(x=>x.n===name);jump(locate(sid,n.at))};
 
 /* 2. 面板骨架 */
 const box=document.createElement('div');box.id='cmap';
@@ -47,6 +47,13 @@ box.innerHTML=`<nav class="toc" aria-label="目录"><a class="back" href="开始
 const zone=document.createElement('div');zone.id='ink-zone';
 zone.innerHTML='<span>手写笔记窗口</span><i class="grip" title="拖动对齐手写窗口的左上角；双击恢复默认"></i>';
 document.body.append(box,zone);
+/* 智慧区（可选）：每个单元一棵括号树，在右下显示；打开手写区时收起 */
+const WD=document.getElementById('wisdom-data'),WZ=WD?JSON.parse(WD.textContent):null;let wzBody=null,wzCur;
+if(WZ){root.classList.add('wz-on');const w=document.createElement('div');w.id='wisdom';
+  w.innerHTML='<header><b>智慧</b><span>这一单元的大局，打开手写区时收起</span></header><div class="body"></div>';
+  document.body.append(w);wzBody=w.querySelector('.body')}
+function wisdom(id){if(!wzBody||id===wzCur)return;wzCur=id;const u=WZ[id];
+  wzBody.innerHTML=u?(u.path?'<div class="wz-path">'+u.path+'</div>':'')+u.html:'<p class="empty">这一单元还没有整理。</p>';wzBody.scrollTop=0}
 const tl=box.querySelector('.tl'),body=box.querySelector('.body'),chapLab=box.querySelector('.chap');
 const back=document.querySelector('aside a[href]');if(back)box.querySelector('.back').href=back.getAttribute('href');
 
@@ -115,7 +122,7 @@ new ResizeObserver(()=>curGraph&&curGraph.draw()).observe(body);
 /* 5. 跟随阅读位置 */
 function spy(){
   let h=heads[0];for(const x of heads){if(x.getBoundingClientRect().top<160)h=x;else break}
-  const i=chapOf.get(h);if(i!==shownChap)renderChap(i);
+  const i=chapOf.get(h);if(i!==shownChap)renderChap(i);wisdom(chapters[i].h.id);
   // 当前小节：本身有数据就用它，否则退到本章导入
   mark(DATA[h.id]?h.id:chapters[i].h.id);
   tocItems.forEach((a,k)=>a.classList.toggle('on',k===h||k===chapters[i].h));
