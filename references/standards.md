@@ -50,4 +50,5 @@
 14. 复积分、电势等积分结论用参数化数值积分复核（中点法或 scipy），不要只核对代数推导。
 15. `contact_sheet.py crop` 的 spec 键名不要带扩展名（会生成 `x.png.png`），并会在输出目录写 `裁切清单.json`；用完要并入 `制作记录/<课程>原图裁切清单.json` 并删除。
 16. 复变的旧 `build_complex.py` 已废弃，统一用 `build_lecture.py`。
+17. 自绘图写成脚本（例：讲义项目的 `draw_<课程>_vN.py`）：按公式算坐标、直接输出 SVG，并对图中每个数值结论做断言、写 json。查看效果：本机无 rsvg/ImageMagick 时，用 Playwright `chromium.launch(channel='chrome')` 截图；标签重叠、曲线越界要逐张看。等值线用 contourpy 求折线，再用 SVG clipPath 裁到区域内。
 
