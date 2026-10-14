@@ -16,6 +16,29 @@ HANDLING = ('讲解', '习题', '折叠', '带过', '同类')
 LABEL = re.compile(r'(例|习题|P|定义|定理|结论)\s*(\d+)')
 
 
+def cells_of(ln):
+    """按未转义、不在 $…$ 和 `…` 里的竖线切分表格行；单元格里的 \\| 还原成 |。"""
+    ln = ln.strip()
+    ln = ln[1:] if ln.startswith('|') else ln
+    ln = ln[:-1] if ln.endswith('|') and not ln.endswith('\\|') else ln
+    cells, cur, inmath, incode, i = [], '', False, False, 0
+    while i < len(ln):
+        ch = ln[i]
+        if ch == '\\' and i + 1 < len(ln) and ln[i + 1] == '|':
+            cur += '|'; i += 2; continue
+        if ch == '`' and not inmath:
+            incode = not incode
+        elif ch == '$' and not incode:
+            inmath = not inmath
+        if ch == '|' and not inmath and not incode:
+            cells.append(cur.strip()); cur = ''
+        else:
+            cur += ch
+        i += 1
+    cells.append(cur.strip())
+    return cells
+
+
 def table(md):
     """记录里“## 覆盖表”一节的表格 → [(条目, 类型, 位置)]。"""
     sec = re.search(r'^## 覆盖表\s*$(.*?)(?=^## |\Z)', md, re.M | re.S)
@@ -25,7 +48,7 @@ def table(md):
     for ln in sec.group(1).splitlines():
         if not ln.strip().startswith('|'):
             continue
-        cells = [c.strip() for c in ln.strip().strip('|').split('|')]
+        cells = cells_of(ln)
         if head is None:
             head = cells
             continue

@@ -3,7 +3,8 @@
 
 用法：new_materials.py <材料目录或文件...>          打印新文件（SHA-256 前 12 位不在记录里）
       new_materials.py --mark <材料目录...>   处理完后登记，下次不再列出
-已知指纹 = ROOT/制作记录/*.md 与 制作记录/归档/*.md 里出现的 12 位以上十六进制串 ∪ ROOT/制作记录/材料指纹.json。
+已知指纹 = ROOT/制作记录/、制作记录/归档/、制作记录/构建/ 下 *.md 与 *.json 里出现的 12 位以上十六进制串
+（旧材料清单把完整 SHA-256 记在 json 里）∪ ROOT/制作记录/材料指纹.json。
 ROOT 同 reader/common.py（环境变量 LECTURE_ROOT）。
 """
 import hashlib, json, re, sys
@@ -18,8 +19,8 @@ dirs = [Path(a).expanduser() for a in args if a != '--mark']
 db_path = REC / '材料指纹.json'
 db = json.loads(db_path.read_text()) if db_path.exists() else {}
 known = set(db.values())
-for md in [*REC.glob('*.md'), *REC.glob('归档/*.md')]:
-    known |= {h[:12] for h in re.findall(r'\b[0-9a-f]{12,64}\b', md.read_text())}
+for md in [f for d in ('.', '归档', '构建') for ext in ('md', 'json') for f in (REC / d).glob(f'*.{ext}')]:
+    known |= {h[:12] for h in re.findall(r'\b[0-9a-f]{12,64}\b', md.read_text(errors='ignore'))}
 
 new = []
 for d in dirs:
