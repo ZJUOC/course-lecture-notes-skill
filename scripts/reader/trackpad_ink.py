@@ -1,4 +1,4 @@
-"""读取 Trackpad Studio 手写（Mac 触控板手写笔记）小窗的尺寸，给概念图版的手写区当默认值。
+"""读取 Trackpad Studio 手写（Mac 触控板手写笔记）小窗的尺寸，给讲义页面的手写区当默认值。
 
 小窗用 NSWindow 的 autosave 名 FloatingNotePanel 记住位置，存在 App 的 defaults 里：
   "NSWindow Frame FloatingNotePanel" = "x y w h 屏x 屏y 屏w 屏h "

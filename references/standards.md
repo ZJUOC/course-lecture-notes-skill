@@ -27,7 +27,7 @@
   ```
 - 块内分条写 `(1) …`，每条单独一行；脚本会自动分段（fancy_lists 已关闭，不会被当成列表）。
 - 数学用 `$…$`、`$$…$$`，输出 MathML。公式过长时拆成两行 `$$`。
-- 图：`![图注，写清图中记号与正文的对应](课程原图/xxx.png)`。并排图：`<div class="figure-row">`（三张用 `figure-row three`），内外都要留空行。
+- 图：`![图注，写清图中记号与正文的对应](资源/<课程>原图/xxx.png)`。并排图：`<div class="figure-row">`（三张用 `figure-row three`），内外都要留空行。
 - 练习：`### P3 标题 {#practice-p3}`，题干段落紧跟标题（脚本会装进“练习 · 先独立作答”块），再写 `<details><summary>提示 · …</summary>…</details>` 和 `<details><summary>解析</summary>…</details>`；details 内外都要留空行。最后加 `### C 概念检查 {#practice-concepts}`：判断题加一个“核对”details。
 
 ## 视觉
@@ -48,7 +48,8 @@
 12. 电路题：写一个小的节点电位求解器（支路表：R/I/V），独立求解每道题并做功率平衡；比逐式代入更能发现方向和符号错误。图注里的判断（例如哪些子图是树）要看原图逐个核对。
 13. 不用 Haiku 等小模型制作讲义或自绘图。2026-10 发现 Haiku 画的独立性面积图、割集图与正文不符；自绘图要按公式逐项核对，图注写“按公式绘制”。
 14. 复积分、电势等积分结论用参数化数值积分复核（中点法或 scipy），不要只核对代数推导。
-15. `contact_sheet.py crop` 的 spec 键名不要带扩展名（会生成 `x.png.png`），并会在输出目录写 `裁切清单.json`；用完要并入 `制作记录/<课程>原图裁切清单.json` 并删除。
+15. `contact_sheet.py crop` 的 spec 键名不要带扩展名（会生成 `x.png.png`），并会在输出目录写 `裁切清单.json`；用完要并入 `制作记录/构建/<课程>原图裁切清单.json` 并删除；裁切输出目录是 `ROOT/资源/<课程>原图`。
 16. 复变的旧 `build_complex.py` 已废弃，统一用 `build_lecture.py`。
-17. 自绘图写成脚本（例：讲义项目的 `draw_<课程>_vN.py`）：按公式算坐标、直接输出 SVG，并对图中每个数值结论做断言、写 json。查看效果：本机无 rsvg/ImageMagick 时，用 Playwright `chromium.launch(channel='chrome')` 截图；标签重叠、曲线越界要逐张看。等值线用 contourpy 求折线，再用 SVG clipPath 裁到区域内。
-
+17. 自绘图写成脚本（例：讲义项目的 `制作记录/构建/draw_<课程>_vN.py`，输出到 `资源/<课程>原图/`）：按公式算坐标、直接输出 SVG，并对图中每个数值结论做断言、写 json。查看效果：本机无 rsvg/ImageMagick 时，用 Playwright `chromium.launch(channel='chrome')` 截图；标签重叠、曲线越界要逐张看。等值线用 contourpy 求折线，再用 SVG clipPath 裁到区域内。
+18. 复现：Skill 必须能从源稿重建出成品。改了构建脚本或阅读器之后，把 ROOT 复制到 scratchpad，`LECTURE_ROOT=<副本> python3 $S/build_all.py`，再与原成品比较：底稿逐字节 `cmp`，页面比较 `<main>` 和 `#concept-data`；不同就要能逐条解释。2026-10-14 的整理就是这样验证的（四门课逐字节相同，物理只差有意改动）。
+19. 不要用 `re.sub` / `re.subn` 的替换串插入 JSON 或 TeX：替换串里的反斜杠会被当成转义（`\\bar` 变成退格符 + `ar`）。用函数作替换参数，或改用 BeautifulSoup 插节点。同理，Python 字符串里写 TeX 一律用原始字符串，否则 `\f`、`\b`、`\t` 会变成控制字符（复变正文曾出现 `\x0crac`）。

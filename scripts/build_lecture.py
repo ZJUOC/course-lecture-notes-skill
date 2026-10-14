@@ -4,15 +4,18 @@
 config 字段（路径相对 config 所在目录，除非为绝对路径）：
   sources: [md,...]      按顺序拼接的构建源
   merged: md             拼接结果（内部构建源，便于核查）
-  output: html           阅读成品
+  output: html           构建输出。讲义写到 ROOT/制作记录/构建/底稿/NN 课程.html，再由 reader/derive.py 生成 ROOT/NN 课程.html；
+                         不需要阅读器的独立页面（如题型池）直接写到 ROOT
+  root: 目录              讲义成品所在的目录（ROOT），默认 output 所在目录；下面两个字体路径相对它
   pagetitle, course, coursesub, crumb, kicker, footer, footerlink
-  latinfontdir: 相对于 output 的拉丁字体目录（含 AnthropicSerif/Sans.woff2）
-  cjkfont: 相对于 output 的中文子集字体路径（脚本会生成）
+  latinfontdir: 拉丁字体目录（含 AnthropicSerif/Sans.woff2），如 资源/物理字体
+  cjkfont: 中文子集字体路径（脚本会生成），如 资源/复变字体/SourceHanSerifCN-Subset.woff2
   cjk_source_font: 本机完整中文字体路径（默认思源宋体 VF）
   report: json           构建报告
 约定：::: {.block .definition|theorem|result|example|warning} 语义块，首段 **标题**；
   练习用 ### 标题 {#practice-xxx}，答案放 <details>；并排图用 <div class="figure-row"> 或 "figure-row three"。
   Pandoc 关闭 fancy_lists，"(1) " 开头的段落不会被当成列表。
+  图片路径写 资源/<课程>原图/xx.png（相对 ROOT）。整理全部课程：python3 build_all.py
 """
 import sys,json,re,subprocess,shutil,os
 from pathlib import Path
@@ -20,13 +23,14 @@ from bs4 import BeautifulSoup
 from fontTools import subset
 cfg_path=Path(sys.argv[1]).resolve();base=cfg_path.parent;c=json.load(open(cfg_path))
 P=lambda s:(Path(s) if Path(s).is_absolute() else base/s)
-out=P(c['output']);merged=P(c['merged'])
+out=P(c['output']);merged=P(c['merged']);site=P(c['root']) if c.get('root') else out.parent
+out.parent.mkdir(parents=True,exist_ok=True)
 text='\n\n'.join(P(s).read_text() for s in c['sources'])
 text=re.sub(r'\n(\((\d)\) )',lambda m:'\n\n'+m.group(1) if m.group(2)!='1' else '\n'+m.group(1),text)
 merged.write_text(text)
 tpl=Path(__file__).resolve().parent.parent/'assets/lecture-template.html'
 # 中文字体子集
-cjk=out.parent/c['cjkfont'];cjk.parent.mkdir(parents=True,exist_ok=True)
+cjk=site/c['cjkfont'];cjk.parent.mkdir(parents=True,exist_ok=True)
 o=subset.Options();o.flavor='woff2';o.recalc_timestamp=False
 f=subset.load_font(os.path.expanduser(c.get('cjk_source_font','~/Library/Fonts/SourceHanSerifCN-VF.ttf')),o);ss=subset.Subsetter(options=o)
 extra=''.join(str(c.get(k,'')) for k in ('pagetitle','course','coursesub','crumb','footer'))+'目录课程讲义展开答案与拓展收起打印保存关闭点击图片放大定义定理结论例题易错练习先独立作答提示解析核对'

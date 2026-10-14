@@ -5,7 +5,7 @@
 - 挑词：jieba 词性分词，名词、动名词、实义动词、成语优先，相邻名词合并（“复合函数”）；
   加粗术语、概念关系里的概念名、手工荧光词作为词典并加分；
 - 密度：分句每约 6 个汉字一个，最多 4 个；紧挨已加粗/已荧光处的短分句少标一个。
-make_concept.py 在手工荧光之后调用 apply()；页面“词”菜单里可切换“密集/只标重点”。
+derive.py 在手工荧光之后调用 apply()；页面“词”菜单里可切换“密集/只标重点”。
 单独试跑：python3 dense.py 课程  只打印统计和几段样例，不写文件。
 """
 import re, sys, logging
@@ -123,7 +123,7 @@ if __name__ == '__main__':
     from bs4 import BeautifulSoup
     from common import ROOT
     c = sys.argv[1]
-    soup = BeautifulSoup((ROOT / f'{c}（ADHD概念图版）.html').read_text(), 'html.parser')
+    soup = BeautifulSoup((ROOT / f'{c}.html').read_text(), 'html.parser')
     n = apply(soup, c)
     chars = sum(len(CJK.findall(p.get_text())) for p in soup.main.find_all('p'))
     print(c, f'密集荧光 {n} 处，约每 {chars // max(n, 1)} 个汉字一处')

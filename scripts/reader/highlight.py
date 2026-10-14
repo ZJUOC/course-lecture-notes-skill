@@ -1,15 +1,12 @@
-"""由已构建的讲义生成 ADHD 版：按句子作用分色荧光标注（ThesisGlow 式），并加阅读地图。
+"""句子荧光：按句子作用分色标注（ThesisGlow 式：结论/方法/例子/易错/概念），由 derive.py 调用。
 
-用法：python3 make_adhd.py（通常由 derive.py 调用）
-输入：ROOT/NN *.html；输出：ROOT/NN *（ADHD版）.html。原讲义不改动。
-人工修订：ROOT/制作记录/ADHD标注修订.json，{"句子开头若干字": "none|thesis|claim|evidence|counter|term"}。
+人工修订：ROOT/制作记录/荧光标注修订.json，{"句子开头若干字": "none|thesis|claim|evidence|counter|term"}。
 """
 import re, json
-from pathlib import Path
 from bs4 import BeautifulSoup, NavigableString, Tag
 
-from common import ROOT, REC as R, COURSES
-OVERRIDE = R / 'ADHD标注修订.json'
+from common import REC as R, base
+OVERRIDE = R / '荧光标注修订.json'
 over = json.loads(OVERRIDE.read_text()) if OVERRIDE.exists() else {}
 
 END = re.compile(r'([。！？；!?]+[”’」）)]*)')
@@ -107,8 +104,8 @@ def sentences(p):
     return groups
 
 
-def process(path_in, path_out, stats):
-    soup = BeautifulSoup(path_in.read_text(), 'html.parser')
+def process(soup, stats):
+    """在 soup 上原地加句子荧光（mark.hl）与术语标记（strong.kt），返回标注数。"""
     main = soup.main
     n = 0
     for p in main.find_all(['p', 'li']):
@@ -140,27 +137,13 @@ def process(path_in, path_out, stats):
         s['data-cat'] = 'term'
         s['id'] = f'hl-{n}'; n += 1
         stats['term'] = stats.get('term', 0) + 1
-    head = soup.head
-    import hashlib
-    ver = hashlib.sha1((ROOT/'ADHD工具/adhd.css').read_bytes()+(ROOT/'ADHD工具/adhd.js').read_bytes()).hexdigest()[:8]
-    head.append(soup.new_tag('link', rel='stylesheet', href=f'ADHD工具/adhd.css?v={ver}'))
-    t = soup.title
-    t.string = t.get_text() + '（ADHD版）'
-    soup.body.append(soup.new_tag('script', src=f'ADHD工具/adhd.js?v={ver}'))
     for b in main.find_all(attrs={'data-adhd-first': True}): del b['data-adhd-first']
     for b in main.find_all(attrs={'data-adhd-task': True}): del b['data-adhd-task']
-    path_out.write_text(str(soup))
     return n
 
 
-if __name__ == '__main__':
-    report = {}
-    for c in COURSES:
-        src = ROOT / f'{c}.html'
-        dst = ROOT / f'{c}（ADHD版）.html'
-        st = {}
-        n = process(src, dst, st)
-        samples = st.pop('_samples', {})
-        report[c] = {'total': n, **st, 'samples': samples}
-        print(c, n, {k: v for k, v in st.items()})
-    (R / 'ADHD标注报告.json').write_text(json.dumps(report, ensure_ascii=False, indent=1))
+def highlighted(course, stats=None):
+    """讲义底稿加上句子荧光后的 soup（词语荧光校验、derive.py 都从这里开始）。"""
+    soup = BeautifulSoup(base(course).read_text(), 'html.parser')
+    process(soup, {} if stats is None else stats)
+    return soup

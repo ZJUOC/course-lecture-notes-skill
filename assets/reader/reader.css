@@ -1,4 +1,30 @@
-/* ADHD 概念图版：右上 目录 | 概念关系，右下留给手写笔记窗口。与 adhd.css 一起加载。 */
+/* 讲义阅读器样式（唯一来源：Skill assets/reader/）。
+   1. 句子荧光：按句子作用分色（ThesisGlow 式） */
+:root{
+  --hl-thesis:#e9dcff; --hl-thesis-ink:#6e4a9c;
+  --hl-claim:#d6eaff;  --hl-claim-ink:#1f6aa5;
+  --hl-evidence:#d8f3dc; --hl-evidence-ink:#1f7a4d;
+  --hl-counter:#ffe0d2; --hl-counter-ink:#b5502a;
+  --hl-term:#fff1a8;   --hl-term-ink:#b23a48;
+  --map-w:300px;
+}
+/* 荧光笔：只涂文字下部约 70%，像真的荧光笔划过 */
+mark.hl{color:inherit;padding:0 .08em;border-radius:3px;-webkit-box-decoration-break:clone;box-decoration-break:clone;transition:background .2s,box-shadow .2s}
+mark.hl-thesis{background:linear-gradient(transparent 28%,var(--hl-thesis) 28%)}
+mark.hl-claim{background:linear-gradient(transparent 28%,var(--hl-claim) 28%)}
+mark.hl-evidence{background:linear-gradient(transparent 28%,var(--hl-evidence) 28%)}
+mark.hl-counter{background:linear-gradient(transparent 28%,var(--hl-counter) 28%)}
+mark.hl-term{background:linear-gradient(transparent 28%,var(--hl-term) 28%)}
+/* 正文中的加粗术语：彩色字 + 下划线 */
+strong.kt{color:var(--hl-term-ink);text-decoration:underline;text-decoration-color:rgba(178,58,72,.45);text-underline-offset:3px;text-decoration-thickness:1.5px}
+/* 关掉某一类 */
+html.off-thesis mark.hl-thesis,html.off-claim mark.hl-claim,html.off-evidence mark.hl-evidence,
+html.off-counter mark.hl-counter,html.off-term mark.hl-term{background:none}
+html.off-term strong.kt{color:inherit;text-decoration:none}
+mark.hl.flash,strong.kt.flash{box-shadow:0 0 0 3px #ffd666;background:#fff6c8}
+
+@media print{mark.hl{background:none!important}}
+/* 2. 右栏：右上 目录 | 视图（概念 / 大纲 / 地图），右下留给手写笔记窗口或智慧区 */
 :root{--ink-w:750px;--ink-h:470px;--col-w:470px;--top-h:calc(100vh - 32px)}
 html.ink-on{--col-w:clamp(420px,var(--ink-w),calc(100vw - 560px));--top-h:calc(100vh - 32px - var(--ink-h))}
 /* 页面原来的左侧目录收起，正文占满左边 */
@@ -109,3 +135,51 @@ html.ink-on #wisdom{display:none}
 .wz-leaf::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:#d9a441;margin:0 7px 2px 0}
 @media (max-width:980px){#wisdom{display:none!important}html.wz-on:not(.ink-on){--top-h:calc(100vh - 32px)}}
 @media print{#wisdom{display:none!important}}
+/* 3. 视图切换、收起面板、原文模式 */
+#cmap .tabs{display:inline-flex;background:#f0f1f5;border-radius:8px;padding:2px;flex:none}
+#cmap .tabs button{border:0;background:none;border-radius:6px;padding:1px 8px;font-size:12px;color:#5b6474;font-weight:600}
+#cmap .tabs button.on{background:#fff;color:#6e4a9c;box-shadow:0 1px 3px rgba(30,40,60,.12)}
+#cmap .tabs button[hidden]{display:none}
+#cmap .x{border:0;background:none;font-size:16px;color:#7a8594;padding:0 2px;line-height:1}
+#cmap .plainbtn{border:1px solid #d6dae3;border-radius:6px;padding:0 6px;font-size:11.5px;color:#4b5563;background:#fff}
+#cmap .plainbtn.on{background:#4b5563;border-color:#4b5563;color:#fff}
+html:not(.v-concept) #cmap .hint{display:none}
+#cmap-open{position:fixed;right:16px;top:16px;z-index:20;display:none;border:0;border-radius:999px;background:#6e4a9c;color:#fff;font:700 13px var(--sans);padding:9px 15px;box-shadow:0 4px 14px rgba(0,0,0,.18);cursor:pointer}
+html.panel-closed #cmap,html.panel-closed #wisdom,html.panel-closed #ink-zone{display:none!important}
+html.panel-closed #cmap-open{display:block}
+/* 原文模式：去掉所有荧光、术语红字和概念小标题，接近原讲义 */
+html.plain mark.hl,html.plain mark.kw,html.plain mark.kw2{background:none!important;font-weight:inherit!important;color:inherit!important;font-size:inherit!important}
+html.plain strong.kt{color:inherit;text-decoration:none}
+html.plain .cpt-head{display:none}
+/* 大纲视图：当前章的小节树（定义、定理、结论、易错、例题、带框公式、关键词） */
+#cmap .ol .sec{position:relative;padding:4px 0 4px 16px;border-bottom:0;border-left:2px solid #e3e1ee}
+#cmap .ol .sec:last-child{border-left-color:transparent}
+#cmap .ol .sec:last-child::after{content:"";position:absolute;left:-2px;top:0;height:17px;border-left:2px solid #e3e1ee}
+#cmap .ol .sec::before{content:"";position:absolute;left:0;top:16px;width:11px;border-top:2px solid #e3e1ee}
+#cmap .ol .brief{display:block;padding:0 6px;color:#8a94a3;font-size:12px;line-height:1.5}
+#cmap .ol .kids{display:none;margin:4px 0 4px 4px;padding-left:10px;border-left:2px dotted #d9d4ea}
+#cmap .ol .sec.cur>.kids{display:block}
+#cmap .ol .n{display:block;width:100%;text-align:left;border:0;background:none;padding:3px 6px;border-radius:7px;line-height:1.5;color:#2c3340}
+#cmap .ol .n:hover{background:#f2f3f7}
+#cmap .ol .n .k{display:inline-block;font-size:10.5px;font-weight:800;border-radius:999px;padding:0 7px;margin-right:6px}
+#cmap .ol .c-term .k{background:var(--hl-term);color:var(--hl-term-ink)}
+#cmap .ol .c-thesis .k{background:var(--hl-thesis);color:var(--hl-thesis-ink)}
+#cmap .ol .c-counter .k{background:var(--hl-counter);color:var(--hl-counter-ink)}
+#cmap .ol .c-evidence .k{background:var(--hl-evidence);color:var(--hl-evidence-ink)}
+#cmap .ol .c-claim .k{background:var(--hl-claim);color:var(--hl-claim-ink)}
+#cmap .ol .c-term{font-weight:700}
+#cmap .ol .n.eq{overflow-x:auto;white-space:nowrap}
+#cmap .ol .n.eq math{font-size:13px}
+#cmap .ol .n.pt,#cmap .ol .n.ex{font-size:12.5px}
+#cmap .ol .n.ex{color:#6b7480}
+#cmap .ol .terms{display:flex;flex-wrap:wrap;gap:4px;padding:5px 6px 2px}
+#cmap .ol .chip{border:0;border-radius:6px;padding:1px 7px;font-size:12px;color:var(--hl-term-ink);background:#fff6cf}
+/* 地图视图：全部句子荧光的卡片，按类过滤 */
+#cmap .rm .sum{margin:6px 0 4px;padding:7px 12px;background:#f2f3f7;border-radius:999px;font-weight:700;color:#4b5563;text-align:center}
+#cmap .rm .card{display:block;width:100%;text-align:left;border:1px solid #eceff4;background:#fff;border-radius:12px;padding:9px 11px;margin:8px 0;line-height:1.55;font-size:12.5px;color:#2c3340}
+#cmap .rm .card:hover{border-color:#cfd5e0;box-shadow:0 2px 8px rgba(30,40,60,.06)}
+#cmap .rm .card[hidden]{display:none}
+#cmap .rm .tag{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.8px;border-radius:999px;padding:2px 8px;margin-bottom:4px}
+#cmap .rm .where{display:block;color:#8a94a3;font-size:11.5px;margin-top:4px}
+#cmap .dot.only{outline:2px solid #6e4a9c;outline-offset:1px}
+@media print{#cmap-open{display:none!important}}

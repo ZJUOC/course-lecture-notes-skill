@@ -3,12 +3,12 @@
 数据：ROOT/制作记录/词语荧光/<课程>.txt，每行“段落开头若干字 || 词1 | 词2”，按页面顺序手工挑选。
 匹配：从上一行匹配到的段落往后找，含该前缀、且所有词都在段内文字中的第一段。
 已经加粗的词不再加；跨公式的词加不上，会列出来。
-make_concept.py 生成概念图版时自动调用 apply()；样式（荧光颜色 / 加粗 / 加大 / 关闭）在 concept.css、concept.js，读者在页面左下“词”按钮里选。
+derive.py 生成页面时自动调用 apply()；样式（荧光颜色 / 加粗 / 加大 / 关闭）在 reader.css、reader.js，读者在页面左下“词”按钮里选。
 单独校验：python3 keywords.py [课程...]，只打印统计和问题，不写文件。
 """
 import re, sys
 from bs4 import BeautifulSoup, NavigableString
-from common import ROOT, REC
+from common import REC
 
 def plain(p):
     out = []
@@ -65,8 +65,9 @@ def apply(soup, course):
 
 
 if __name__ == '__main__':
+    from highlight import highlighted
     for course in sys.argv[1:] or sorted(f.stem for f in (REC / '词语荧光').glob('*.txt')):
-        soup = BeautifulSoup((ROOT / f'{course}（ADHD版）.html').read_text(), 'html.parser')
+        soup = highlighted(course)
         done, bold, miss = apply(soup, course)
         print(course, f'标了 {done} 处，{bold} 处原本已加粗', f'{len(miss)} 个问题')
         for m in miss:

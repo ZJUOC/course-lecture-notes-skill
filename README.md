@@ -1,6 +1,6 @@
 # course-lecture-notes · 课程讲义 Skill
 
-把**课堂转写（含嵌图 DOCX）+ 课件 PDF + 教材**整合成能独立自学的桌面 HTML 讲义。讲义构建好以后，可以再派生三个给注意力不集中的读者用的版本，其中“概念图版”给 [Mac 触控板手写笔记](https://github.com/chinayuren2022-2025/mac-trackpad-notes) 的小窗留了位置：边看讲义，边在触控板上手写。
+把**课堂转写（含嵌图 DOCX）+ 课件 PDF + 教材**整合成能独立自学的桌面 HTML 讲义。每门课只出**一个页面**：正文带分色荧光，右侧阅读面板可切换概念关系图、概念大纲、荧光地图，并给 [Mac 触控板手写笔记](https://github.com/chinayuren2022-2025/mac-trackpad-notes) 的小窗留了位置：边看讲义，边在触控板上手写。
 
 这是一个 [Claude Code](https://claude.com/claude-code) Skill（也适用于读 `SKILL.md` 的其他代理）。
 
@@ -11,23 +11,24 @@
 | 盘点 | `scripts/new_materials.py` | 只列出还没处理过的材料（按 SHA-256 前 12 位比对记录） |
 | 抽取 | `scripts/extract_docx.py` | 转写 DOCX 拆成约 1 万 token 的文字块，并抽出全部嵌图（DrawingML 和 VML 两种） |
 | 看图 | `scripts/contact_sheet.py` | 20 图一张总览、坐标网格、按清单裁原图 |
-| 构建 | `scripts/build_lecture.py` | Markdown → HTML（MathML 公式、语义块、练习折叠答案、中文字体子集） |
-| 验收 | `scripts/desktop_qa.py` | Playwright 桌面截图，检查公式解析错误、残留 `$`、图片和锚点 |
-| 派生 | `scripts/adhd/derive.py` | 一条命令生成 ADHD版 / 大纲版 / 概念图版 |
+| 构建 | `scripts/build_lecture.py` | Markdown → HTML 底稿（MathML 公式、语义块、练习折叠答案、中文字体子集） |
+| 阅读器 | `scripts/reader/derive.py` | 底稿 → 读者打开的页面（荧光、概念关系、智慧区、手写区） |
+| 全部重建 | `scripts/build_all.py` | 一条命令从源稿重建所有课程，用来验证可复现 |
+| 验收 | `scripts/desktop_qa.py` | Playwright 桌面截图，检查公式解析错误、残留 `$`、图片、锚点和阅读面板三种视图 |
 
-### ADHD 派生版本
+### 阅读页面
 
-- **ADHD版**：按句子作用分色荧光标注：结论、方法、例子、易错、概念。
-- **大纲版**：右侧大纲跟随阅读位置。
-- **概念图版**：右上是目录，和当前小节的概念关系图并排，A → B 表示 B 用到 A，点概念跳到原文。右下的虚线框留给手写小窗。概念关系是**手工整理**的文本文件，格式见 [`examples/概念关系示例.txt`](examples/概念关系示例.txt) 和 [`references/adhd-editions.md`](references/adhd-editions.md)。**没有这个文件的课程不会生成概念图版**（`derive.py` 会打印 ⚠ 提示），这时只有 ADHD版和大纲版，目录仍在左边。
-  概念图版正文还有**词语荧光**：每段手工挑一到三个句子骨架词加荧光，帮助跳读；页面左下“词”按钮可换颜色（琥珀、橙红、青绿、天蓝、粉紫），或改成只加粗、加大，或关闭。数据在 `制作记录/词语荧光/<课程>.txt`。另外 `scripts/adhd/dense.py` 会按分句自动补浅一档的**密集荧光**（约每 6 个汉字一处，不求严格语义，只给视线落点），“密”按钮可开关。
+- **荧光**：按句子作用分色：结论、方法、例子、易错、概念；另有手工挑的**词语荧光**（数据在 `制作记录/词语荧光/<课程>.txt`）和 `dense.py` 按分句自动补的浅一档**密集荧光**（约每 6 个汉字一处，只给视线落点）。底部按钮可换颜色、开关各类，“原文”一键去掉全部荧光。
+- **右栏三种视图**：**概念**——当前小节的概念关系图，A → B 表示 B 用到 A，点概念跳到原文；概念关系是**手工整理**的文本文件，格式见 [`examples/概念关系示例.txt`](examples/概念关系示例.txt) 和 [`references/reader.md`](references/reader.md)，没有这个文件的课程只有另外两种视图。**大纲**——当前章的定义、定理、结论、例题、带框公式和关键词。**地图**——全部荧光句子的卡片。
+- **手写区与智慧区**：右下虚线框给手写小窗让位；关掉手写区时显示本单元的“智慧”括号树（`制作记录/智慧/<课程>.txt`）。
+- “×”收起面板，回到原讲义的左侧目录版面。
 
 ## 和 Mac 触控板手写笔记的联动
 
-生成概念图版时，`scripts/adhd/trackpad_ink.py` 会从 Trackpad Studio 手写 App 的系统偏好设置里读出小窗尺寸（键名 `NSWindow Frame FloatingNotePanel`），作为手写区的默认大小。所以在 App 里调好小窗（⌃⌥N 呼出），重跑 `derive.py concept`，讲义的避让区就和小窗一样大。没装 App 时默认 750×470；也可以在页面上拖虚线框左上角的紫点手动校准。
+生成页面时，`scripts/reader/trackpad_ink.py` 会从 Trackpad Studio 手写 App 的系统偏好设置里读出小窗尺寸（键名 `NSWindow Frame FloatingNotePanel`），作为手写区的默认大小。所以在 App 里调好小窗（⌃⌥N 呼出），重跑 `derive.py`，讲义的避让区就和小窗一样大。没装 App 时默认 750×470；也可以在页面上拖虚线框左上角的紫点手动校准。
 
 ```bash
-python3 scripts/adhd/trackpad_ink.py   # 打印 747×470（local.macwriting.trackpadstudio）
+python3 scripts/reader/trackpad_ink.py   # 打印 747×470（local.macwriting.trackpadstudio）
 ```
 
 ## 省 token 的设计
@@ -38,7 +39,7 @@ python3 scripts/adhd/trackpad_ink.py   # 打印 747×470（local.macwriting.trac
 - 每份转写只读一遍，看图先看 20 图一张的总览；
 - 整理概念关系时看 `concept_map.py skeleton` 打印的小节骨架（id、标题、加粗词），不用读整页 HTML；
 - 构建、核验、验收都看 json 报告里的数字，不重读成品；
-- 派生版本一条命令，校验不过不生成文件。
+- 阅读页面一条命令生成，概念关系校验不过不写文件；`build_all.py` 一条命令从源稿重建全部课程。
 
 具体规则写在 [`SKILL.md`](SKILL.md) 的“省 token 规则”一节，代理每次开工都会读到。
 
@@ -49,20 +50,25 @@ git clone https://github.com/chinayuren2022-2025/course-lecture-notes-skill ~/.c
 export LECTURE_ROOT=~/path/to/讲义项目   # 可选；不设时使用作者的 iCloud 目录或当前目录
 ```
 
-依赖：Python 3（`beautifulsoup4`、`fonttools`、`Pillow`、`playwright`）、[Pandoc](https://pandoc.org)，以及一份中文字体（默认 `~/Library/Fonts/SourceHanSerifCN-VF.ttf`，可在构建配置里改）。
+依赖：Python 3（`beautifulsoup4`、`fonttools`、`Pillow`、`playwright`、`jieba`）、[Pandoc](https://pandoc.org)，以及一份中文字体（默认 `~/Library/Fonts/SourceHanSerifCN-VF.ttf`，可在构建配置里改）。
 
 ## 项目目录约定
 
 ```
 ROOT/
-├── NN 课程名.html                 # build_lecture.py 的成品
-├── NN 课程名（ADHD版|ADHD大纲版|ADHD概念图版）.html
-├── ADHD工具/                      # derive.py 从 assets/adhd 同步过来
+├── 开始阅读.html、00 阅读指南.md
+├── NN 课程名.html                 # 读者打开的唯一页面（derive.py 生成）
+├── 资源/
+│   ├── <课程>原图/、<课程>字体/
+│   └── 阅读器/                     # derive.py 从 assets/reader 同步过来
 └── 制作记录/
-    ├── <课程>正文N.md、<课程>构建配置.json、validate_<课程>.py
-    ├── ADHD标注修订.json
-    ├── 概念关系/<课程>.txt
-    └── 词语荧光/<课程>.txt
+    ├── NN 记录.md                   # 决策、重构记录
+    ├── 正文/<课程>正文N.md          # Markdown 源稿，图片写 资源/<课程>原图/xx.png
+    ├── 构建/<课程>构建配置.json      # 输出到 构建/底稿/NN 课程名.html
+    ├── 核验/validate_<课程>.py
+    ├── 荧光标注修订.json
+    ├── 概念关系/<课程>.txt、词语荧光/<课程>.txt、智慧/<课程>.txt
+    └── 修订前备份/、归档/
 ```
 
 ## 许可

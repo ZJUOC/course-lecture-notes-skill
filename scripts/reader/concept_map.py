@@ -12,7 +12,7 @@ import re, json, sys
 from pathlib import Path
 from bs4 import BeautifulSoup
 
-from common import REC as R, ROOT
+from common import REC as R, base
 SEP = re.compile(r'(?<= )\|(?= |$)')
 
 
@@ -69,7 +69,7 @@ def section_text(soup):
 def build(course):
     src = R / '概念关系' / f'{course}.txt'
     secs, order = parse(src)
-    soup = BeautifulSoup((ROOT / f'{course}.html').read_text(), 'html.parser')
+    soup = BeautifulSoup(base(course).read_text(), 'html.parser')
     texts = section_text(soup)
     ids = [h.get('id') for h in soup.main.find_all(['h2', 'h3']) if h.get('id')]
     problems, seen = [], set()
@@ -100,7 +100,7 @@ def build(course):
 
 def skeleton(course, limit=10):
     """省 token：只列出每个小节的 id、标题、加粗词和语义块标题，整理概念关系时看这个，不必读整页 HTML。"""
-    soup = BeautifulSoup((ROOT / f'{course}.html').read_text(), 'html.parser')
+    soup = BeautifulSoup(base(course).read_text(), 'html.parser')
     src = R / '概念关系' / f'{course}.txt'
     done = set(parse(src)[0]) if src.exists() else set()
     for h in soup.main.find_all(['h2', 'h3']):

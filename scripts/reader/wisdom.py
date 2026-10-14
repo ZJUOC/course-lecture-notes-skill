@@ -1,15 +1,15 @@
-"""概念图版的两样手工内容（都可选）：
+"""讲义页面的两样手工内容（都可选）：
 
 1. 概念小标题：概念关系 txt 的概念行写第 4 栏“注解”时，正文里该小节下插一个小标题（概念名）和一行注解。
    每节第一个概念紧跟小节标题；其余插在定位词第一次出现的块之前，顺序不倒退。
      概念名 | 依赖 | 定位词 | 一行注解（可含 $tex$）
-2. 智慧区：ROOT/制作记录/智慧/<课程>.txt，每个单元（h2）一棵括号树，右下显示，打开手写区时收起。
+2. 智慧区（只在有概念关系 txt 的课程生效）：ROOT/制作记录/智慧/<课程>.txt，每个单元（h2）一棵括号树，右下显示，打开手写区时收起。
      @单元id
      路径: 复积分 › 闭合曲线 › 存在奇点      ← 可省，显示在树上方
      根节点
        子节点（两空格一层）
 
-apply(soup, course) 由 make_concept.py 在荧光之后调用；返回 (小标题数, 智慧单元数, 问题列表)。
+apply(soup, course) 由 derive.py 在荧光之后调用；返回 (小标题数, 智慧单元数, 问题列表)。
 """
 import json, re, subprocess, shutil, os
 from bs4 import BeautifulSoup
@@ -118,5 +118,5 @@ def apply(soup, course):
         blob = json.dumps(data, ensure_ascii=False).replace('</', '<\\/')
         tag = BeautifulSoup(f'<script id="wisdom-data" type="application/json">{blob}</script>', 'html.parser')
         cd = soup.find('script', id='concept-data')
-        cd.insert_before(tag)
+        cd.insert_before(tag) if cd else soup.body.append(tag)
     return n_head, len(data), probs
