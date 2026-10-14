@@ -13,7 +13,7 @@ config 字段（路径相对 config 所在目录，除非为绝对路径）：
   cjk_source_font: 本机完整中文字体路径（默认思源宋体 VF）
   report: json           构建报告
 约定：::: {.block .definition|theorem|result|example|warning} 语义块，首段 **标题**；
-  练习用 ### 标题 {#practice-xxx}，题干段落、公式和题图都会装进练习块，答案放 <details>；并排图用 <div class="figure-row"> 或 "figure-row three"。
+  练习用 ### 或 #### 标题 {#practice-xxx}，题干段落、公式和题图都会装进练习块，答案放 <details>；并排图用 <div class="figure-row"> 或 "figure-row three"。
   Pandoc 关闭 fancy_lists，"(1) " 开头的段落不会被当成列表。
   图片路径写 资源/<课程>原图/xx.png（相对 ROOT）。整理全部课程：python3 build_all.py
 """
@@ -71,7 +71,7 @@ for block in main.select('div.block'):
     kind=[x for x in block['class'] if x!='block'][0];counts[kind]=counts.get(kind,0)+1
     q=block.find('p',recursive=False)
     if q and q.find('strong') and q.get_text().strip()==q.find('strong').get_text().strip():q['class']=['block-title']
-for h in main.find_all('h3'):
+for h in main.find_all(['h3','h4']):
     if not h.get('id','').startswith('practice-'):continue
     nodes=[]
     for n in h.find_next_siblings():

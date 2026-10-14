@@ -45,7 +45,7 @@ def check(path):
         if not re.match(r'\d+ \S', t):
             E.append(f'单元标题应以“N ”开头：{t[:20]}')
     h3s = m.find_all('h3')
-    practice = [h for h in h3s if h.get('id', '').startswith('practice-')]
+    practice = [h for h in m.find_all(['h3', 'h4']) if h.get('id', '').startswith('practice-')]
     for h in h3s:
         t = norm(h)
         if h in practice:
@@ -55,13 +55,13 @@ def check(path):
         elif not re.match(r'\d+\.\d+ \S', t):
             E.append(f'小节标题应以“N.M ”开头（练习写 ### P1 … {{#practice-p1}}）：{t[:20]}')
     if not practice:
-        E.append('没有练习（### … {#practice-…}）')
+        E.append('没有练习（### P1 … 或 #### 习题 k … {#practice-…}）')
     for h in practice:
         if h.get('id') == 'practice-concepts':
             continue
         sib = []
         for n in h.find_next_siblings():
-            if n.name in ('h2', 'h3'):
+            if n.name in ('h2', 'h3', 'h4'):
                 break
             sib.append(n)
         if not any(n.name == 'details' or n.find('details') for n in sib):
@@ -112,12 +112,15 @@ def check(path):
             if n.name in ('h2', 'h3'):
                 break
             for b in ([n] if 'block' in (n.get('class') or []) else n.select('div.block') if hasattr(n, 'select') else []):
+                if norm(b.find(class_='block-title') or b).startswith('练习'):
+                    continue
                 s += ABBR.get([c for c in b['class'] if c != 'block'][0], '?')
         seqs.append(s)
     nonempty = [s for s in seqs if s]
     kinds = Counter(c for b in blocks for c in b['class'] if c in KINDS)
     prof = {
         'units': len(units), 'sections': len(seqs), 'practice': len([h for h in practice if h.get('id') != 'practice-concepts']),
+        'section_practice': len([h for h in practice if h.name == 'h4']),
         'concept_check': bool(m.find(id='practice-concepts')), 'blocks': dict(sorted(kinds.items())),
         'examples_per_section': round(kinds.get('example', 0) / max(1, len(seqs)), 2),
         'example_first': round(sum(s[0] == 'E' for s in nonempty) / max(1, len(nonempty)), 2),

@@ -29,7 +29,7 @@
 - 块内分条写 `(1) …`，每条单独一行；脚本会自动分段（fancy_lists 已关闭，不会被当成列表）。
 - 数学用 `$…$`、`$$…$$`，输出 MathML。公式过长时拆成两行 `$$`。
 - 图：`![图注，写清图中记号与正文的对应](资源/<课程>原图/xxx.png)`。并排图：`<div class="figure-row">`（三张用 `figure-row three`），内外都要留空行。
-- 练习：`### P3 标题 {#practice-p3}`，题干段落紧跟标题（脚本会装进“练习 · 先独立作答”块），再写 `<details><summary>提示 · …</summary>…</details>` 和 `<details><summary>解析</summary>…</details>`；details 内外都要留空行。最后加 `### C 概念检查 {#practice-concepts}`：判断题加一个“核对”details。
+- 练习：`### P3 标题 {#practice-p3}`（例题驱动的小节习题用 `#### 习题 k · 名称 {#practice-k}`，挂在小节末尾），题干段落紧跟标题（脚本会装进“练习 · 先独立作答”块），再写 `<details><summary>提示 · …</summary>…</details>` 和 `<details><summary>解析</summary>…</details>`；details 内外都要留空行。最后加 `### C 概念检查 {#practice-concepts}`：判断题加一个“核对”details。
 
 ## 视觉
 浅色页面，Anthropic Serif/Sans 字体，中文用思源宋体子集（每门课单独一个字体目录，不改其他课程的字体文件）；只做桌面版，不做手机版验收。
@@ -55,3 +55,4 @@
 18. 复现：Skill 必须能从源稿重建出成品。改了构建脚本或阅读器之后，把 ROOT 复制到 scratchpad，`LECTURE_ROOT=<副本> python3 $S/build_all.py`，再与原成品比较：底稿逐字节 `cmp`，页面比较 `<main>` 和 `#concept-data`；不同就要能逐条解释。2026-10-14 的整理就是这样验证的（四门课逐字节相同，物理只差有意改动）。
 19. 不要用 `re.sub` / `re.subn` 的替换串插入 JSON 或 TeX：替换串里的反斜杠会被当成转义（`\\bar` 变成退格符 + `ar`）。用函数作替换参数，或改用 BeautifulSoup 插节点。同理，Python 字符串里写 TeX 一律用原始字符串，否则 `\f`、`\b`、`\t` 会变成控制字符（复变正文曾出现 `\x0crac`）。
 20. 一致性测试：改了写作规则或脚本后，用同一份输入（例如一本教材的一节）让 3 个互不知情的代理各自从零按 Skill 做讲义，再 `format_check.py a.html b.html c.html` 对照结构画像，并收集它们“不得不自己拿主意”的地方，补进规则。2026-10-14 用赵凯华《光学》§4 做过一次：三份都 PASS、0 警告，例题打头比例都是 100%；差异只在单元数（3 或 4）、补充例题数（7—10）和加粗来源行写法，已在 mainlines.md 里定死。
+21. 2026-10-15 用户调整：长公式横向滚动不算问题，不必拆；例题驱动改为“能做出范围内全部教材例题和习题、覆盖全部概念定理证明应用、先例题后理论再附习题”，由覆盖表和 `coverage_check.py` 保证；学领域或科研方向时不用例题驱动和题型归纳。

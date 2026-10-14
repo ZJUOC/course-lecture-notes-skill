@@ -1,11 +1,15 @@
-# course-lecture-notes · 课程讲义 Skill
+# Learn everything in HTML · 讲义 Skill
 
-把学习材料整合成能独立自学的桌面 HTML 讲义。目前支持两种输入：
+把学习材料整合成能独立自学的桌面 HTML 讲义（原名 course-lecture-notes）。目前支持三种输入：
 
 - **课堂转写（含嵌图 DOCX）+ 课件 PDF + 教材**；
-- **只有一本教材**（扫描版也行）：按目录选章节，逐页看图读书，例题和章末习题都整理进讲义。
+- **只有一本教材**（扫描版也行）：按目录选章节，逐页看图读书，例题和章末习题都整理进讲义；
+- **一个领域或科研方向**：论文、综述、网页，或者只给一个主题（代理先列书单给你确认）。这是真实学习，不是应试。
 
-动笔前，代理会问你要哪种**主线**把讲义串起来：例题驱动（每节从一道例题出发，解完再提炼结论；默认推荐）、概念体系、课堂顺序、题型归纳，见 [`references/mainlines.md`](references/mainlines.md)。选定后写进构建配置，以后不再问。
+动笔前，代理会问你要哪种**主线**把讲义串起来，见 [`references/mainlines.md`](references/mainlines.md)。选定后写进构建配置，以后不再问。
+
+- 学一门课：**例题驱动**（默认推荐：例题从教材例题和习题里挑，每节先讲题、再讲结论和理论、最后附习题；保证范围内全部教材例题和习题都能做出来，全部概念、定义、定理、证明和应用都讲到，由覆盖表和 `coverage_check.py` 核对）、概念体系、课堂顺序、题型归纳。
+- 学一个领域：**问题驱动**（默认推荐）、发展脉络、概念体系、论文精读；不提供以题目为中心的主线。
 
 每门课只出**一个页面**：正文带分色荧光，右侧阅读面板可切换概念关系图、概念大纲、荧光地图，并给 [Mac 触控板手写笔记](https://github.com/chinayuren2022-2025/mac-trackpad-notes) 的小窗留了位置：边看讲义，边在触控板上手写。
 
@@ -23,6 +27,7 @@
 | 构建 | `scripts/build_lecture.py` | Markdown → HTML 底稿（MathML 公式、语义块、练习折叠答案、中文字体子集） |
 | 阅读器 | `scripts/reader/derive.py` | 底稿 → 读者打开的页面（荧光、概念关系、智慧区、手写区） |
 | 全部重建 | `scripts/build_all.py` | 一条命令从源稿重建所有课程，用来验证可复现 |
+| 覆盖 | `scripts/coverage_check.py` | 核对覆盖表：教材每个例题、习题、定义、定理都有讲义位置，且位置真实存在 |
 | 格式 | `scripts/format_check.py` | 检查不随主线变化的格式（学习路线、块标题、例题编号、练习与概念检查）；多份对照时列出结构画像 |
 | 验收 | `scripts/desktop_qa.py` | Playwright 桌面截图，检查公式解析错误、残留 `$`、图片、锚点和阅读面板三种视图 |
 
@@ -56,8 +61,8 @@ python3 scripts/reader/trackpad_ink.py   # 打印 747×470（local.macwriting.tr
 ## 安装
 
 ```bash
-git clone https://github.com/chinayuren2022-2025/course-lecture-notes-skill ~/.claude/skills/course-lecture-notes
-python3 ~/.claude/skills/course-lecture-notes/scripts/new_project.py ~/讲义 01 光学 光学 --mainline 例题驱动 --input 单本教材
+git clone https://github.com/chinayuren2022-2025/learn-everything-in-html ~/.claude/skills/learn-everything-in-html
+python3 ~/.claude/skills/learn-everything-in-html/scripts/new_project.py ~/讲义 01 光学 光学 --mainline 例题驱动 --input 单本教材
 # 之后在 ~/讲义 里运行脚本即可；也可以 export LECTURE_ROOT=~/讲义
 ```
 
