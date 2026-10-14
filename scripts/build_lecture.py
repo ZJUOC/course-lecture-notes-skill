@@ -13,7 +13,7 @@ config 字段（路径相对 config 所在目录，除非为绝对路径）：
   cjk_source_font: 本机完整中文字体路径（默认思源宋体 VF）
   report: json           构建报告
 约定：::: {.block .definition|theorem|result|example|warning} 语义块，首段 **标题**；
-  练习用 ### 标题 {#practice-xxx}，答案放 <details>；并排图用 <div class="figure-row"> 或 "figure-row three"。
+  练习用 ### 标题 {#practice-xxx}，题干段落、公式和题图都会装进练习块，答案放 <details>；并排图用 <div class="figure-row"> 或 "figure-row three"。
   Pandoc 关闭 fancy_lists，"(1) " 开头的段落不会被当成列表。
   图片路径写 资源/<课程>原图/xx.png（相对 ROOT）。整理全部课程：python3 build_all.py
 """
@@ -30,16 +30,25 @@ text=re.sub(r'\n(\((\d)\) )',lambda m:'\n\n'+m.group(1) if m.group(2)!='1' else 
 merged.write_text(text)
 tpl=Path(__file__).resolve().parent.parent/'assets/lecture-template.html'
 # 中文字体子集
+# 本机没有中文源字体或拉丁字体时不报错：去掉对应 @font-face，页面回退到系统字体（见 notes）
+notes=[]
 cjk=site/c['cjkfont'];cjk.parent.mkdir(parents=True,exist_ok=True)
-o=subset.Options();o.flavor='woff2';o.recalc_timestamp=False
-f=subset.load_font(os.path.expanduser(c.get('cjk_source_font','~/Library/Fonts/SourceHanSerifCN-VF.ttf')),o);ss=subset.Subsetter(options=o)
-extra=''.join(str(c.get(k,'')) for k in ('pagetitle','course','coursesub','crumb','footer'))+'目录课程讲义展开答案与拓展收起打印保存关闭点击图片放大定义定理结论例题易错练习先独立作答提示解析核对'
-ss.populate(unicodes={ord(ch) for ch in text+extra if ord(ch)>=0x2E80});ss.subset(f);subset.save_font(f,str(cjk),o)
+src_font=Path(os.path.expanduser(c.get('cjk_source_font','~/Library/Fonts/SourceHanSerifCN-VF.ttf')))
+if src_font.exists():
+    o=subset.Options();o.flavor='woff2';o.recalc_timestamp=False
+    f=subset.load_font(str(src_font),o);ss=subset.Subsetter(options=o)
+    extra=''.join(str(c.get(k,'')) for k in ('pagetitle','course','coursesub','crumb','footer'))+'目录课程讲义展开答案与拓展收起打印保存关闭点击图片放大定义定理结论例题易错练习先独立作答提示解析核对'
+    ss.populate(unicodes={ord(ch) for ch in text+extra if ord(ch)>=0x2E80});ss.subset(f);subset.save_font(f,str(cjk),o)
+elif not cjk.exists():notes.append(f'没有中文源字体 {src_font}，用系统宋体')
+latin_ok=(site/c.get('latinfontdir','')/'AnthropicSerif.woff2').exists()
+if not latin_ok:notes.append('latinfontdir 下没有 AnthropicSerif/Sans.woff2，用系统字体')
 args=['pandoc',str(merged),'-f','markdown-fancy_lists+tex_math_dollars+raw_html','-t','html5','--mathml','--standalone','--toc','--toc-depth=2','--template',str(tpl),'-o',str(out)]
 for k in ('pagetitle','course','coursesub','crumb','kicker','footer','footerlink','latinfontdir','cjkfont'):args+=['-V',f'{k}={c.get(k,"")}']
 pd=c.get('pandoc') or shutil.which('pandoc') or os.path.expanduser('~/anaconda3/bin/pandoc');args[0]=pd
 p=subprocess.run(args,capture_output=True,text=True,check=True)
 html=re.sub(r'<colgroup>.*?</colgroup>','',out.read_text(),flags=re.S)
+if not latin_ok:html=re.sub(r'@font-face\{font-family:"Anthropic (Serif|Sans)";[^}]*\}','',html)
+if not cjk.exists():html=re.sub(r'@font-face\{font-family:"Lecture Song";[^}]*\}','',html)
 html=re.sub(r'<p>(<math display="block".*?</math>)</p>',r'<div class="display math">\1</div>',html,flags=re.S)
 # \bar / \overline：Chrome 的 MathML 横线紧贴字母（\overline 还缩成一小段），换成 CSS 上边框，宽度随内容、留出间隙
 OVL='<mrow style="border-top:0.065em solid;padding-top:0.18em;margin-top:0.05em">'
@@ -66,7 +75,7 @@ for h in main.find_all('h3'):
     if not h.get('id','').startswith('practice-'):continue
     nodes=[]
     for n in h.find_next_siblings():
-        if n.name not in ('p','ol','ul','div') or (n.name=='div' and 'display' not in n.get('class',[])):break
+        if n.name not in ('p','ol','ul','div','figure') or (n.name=='div' and not {'display','figure-row'}&set(n.get('class',[]))):break
         nodes.append(n)
     if nodes:
         b=soup.new_tag('div',attrs={'class':'block example'});lab=soup.new_tag('div',attrs={'class':'block-title'});lab.string='练习 · 先独立作答';b.append(lab)
@@ -76,6 +85,6 @@ for h in main.find_all('h3'):
 for fig in main.find_all('figure'):
     im=fig.find('img');b=soup.new_tag('button',attrs={'class':'figure-open','type':'button','aria-label':'放大：'+im.get('alt','配图')});im.wrap(b)
 out.write_text(str(soup))
-r={'output':str(out),'source_chars':len(text),'html_bytes':out.stat().st_size,'math':len(main.find_all('math')),'figures':len(main.find_all('figure')),'details':len(main.find_all('details')),'blocks':counts,'pandoc_warnings':p.stderr}
+r={'output':str(out),'source_chars':len(text),'html_bytes':out.stat().st_size,'math':len(main.find_all('math')),'figures':len(main.find_all('figure')),'details':len(main.find_all('details')),'blocks':counts,'pandoc_warnings':p.stderr,'notes':notes}
 if c.get('report'):P(c['report']).write_text(json.dumps(r,ensure_ascii=False,indent=2))
 print(json.dumps(r,ensure_ascii=False))

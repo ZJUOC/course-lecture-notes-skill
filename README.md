@@ -1,6 +1,13 @@
 # course-lecture-notes · 课程讲义 Skill
 
-把**课堂转写（含嵌图 DOCX）+ 课件 PDF + 教材**整合成能独立自学的桌面 HTML 讲义。每门课只出**一个页面**：正文带分色荧光，右侧阅读面板可切换概念关系图、概念大纲、荧光地图，并给 [Mac 触控板手写笔记](https://github.com/chinayuren2022-2025/mac-trackpad-notes) 的小窗留了位置：边看讲义，边在触控板上手写。
+把学习材料整合成能独立自学的桌面 HTML 讲义。目前支持两种输入：
+
+- **课堂转写（含嵌图 DOCX）+ 课件 PDF + 教材**；
+- **只有一本教材**（扫描版也行）：按目录选章节，逐页看图读书，例题和章末习题都整理进讲义。
+
+动笔前，代理会问你要哪种**主线**把讲义串起来：例题驱动（每节从一道例题出发，解完再提炼结论；默认推荐）、概念体系、课堂顺序、题型归纳，见 [`references/mainlines.md`](references/mainlines.md)。选定后写进构建配置，以后不再问。
+
+每门课只出**一个页面**：正文带分色荧光，右侧阅读面板可切换概念关系图、概念大纲、荧光地图，并给 [Mac 触控板手写笔记](https://github.com/chinayuren2022-2025/mac-trackpad-notes) 的小窗留了位置：边看讲义，边在触控板上手写。
 
 这是一个 [Claude Code](https://claude.com/claude-code) Skill（也适用于读 `SKILL.md` 的其他代理）。
 
@@ -8,12 +15,15 @@
 
 | 阶段 | 脚本 | 作用 |
 |---|---|---|
+| 建项目 | `scripts/new_project.py` | 新建项目或加一门课：目录、构建配置（含主线）、制作记录、目录页 |
+| 读教材 | `scripts/textbook.py` | 看书签目录、判断有无文字层；按页渲染成图，附文字层或 OCR 供检索 |
 | 盘点 | `scripts/new_materials.py` | 只列出还没处理过的材料（按 SHA-256 前 12 位比对记录） |
 | 抽取 | `scripts/extract_docx.py` | 转写 DOCX 拆成约 1 万 token 的文字块，并抽出全部嵌图（DrawingML 和 VML 两种） |
 | 看图 | `scripts/contact_sheet.py` | 20 图一张总览、坐标网格、按清单裁原图 |
 | 构建 | `scripts/build_lecture.py` | Markdown → HTML 底稿（MathML 公式、语义块、练习折叠答案、中文字体子集） |
 | 阅读器 | `scripts/reader/derive.py` | 底稿 → 读者打开的页面（荧光、概念关系、智慧区、手写区） |
 | 全部重建 | `scripts/build_all.py` | 一条命令从源稿重建所有课程，用来验证可复现 |
+| 格式 | `scripts/format_check.py` | 检查不随主线变化的格式（学习路线、块标题、例题编号、练习与概念检查）；多份对照时列出结构画像 |
 | 验收 | `scripts/desktop_qa.py` | Playwright 桌面截图，检查公式解析错误、残留 `$`、图片、锚点和阅读面板三种视图 |
 
 ### 阅读页面
@@ -47,10 +57,11 @@ python3 scripts/reader/trackpad_ink.py   # 打印 747×470（local.macwriting.tr
 
 ```bash
 git clone https://github.com/chinayuren2022-2025/course-lecture-notes-skill ~/.claude/skills/course-lecture-notes
-export LECTURE_ROOT=~/path/to/讲义项目   # 可选；不设时使用作者的 iCloud 目录或当前目录
+python3 ~/.claude/skills/course-lecture-notes/scripts/new_project.py ~/讲义 01 光学 光学 --mainline 例题驱动 --input 单本教材
+# 之后在 ~/讲义 里运行脚本即可；也可以 export LECTURE_ROOT=~/讲义
 ```
 
-依赖：Python 3（`beautifulsoup4`、`fonttools`、`Pillow`、`playwright`、`jieba`）、[Pandoc](https://pandoc.org)，以及一份中文字体（默认 `~/Library/Fonts/SourceHanSerifCN-VF.ttf`，可在构建配置里改）。
+依赖：Python 3（`beautifulsoup4`、`fonttools`、`Pillow`、`playwright`、`jieba`、`pymupdf`）、[Pandoc](https://pandoc.org)；扫描版教材的检索用 `tesseract`（含 chi_sim）。中文字体默认 `~/Library/Fonts/SourceHanSerifCN-VF.ttf`（可在构建配置里改），没有时页面用系统宋体。
 
 ## 项目目录约定
 

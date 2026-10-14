@@ -21,7 +21,7 @@ async def main():
         await pg.goto(url);await pg.evaluate('document.fonts.ready')
         # 等图片全部加载（大页面 800ms 不够），最多 15 秒
         await pg.evaluate("()=>Promise.race([Promise.all([...document.images].map(i=>i.complete?0:new Promise(r=>{i.onload=i.onerror=r}))),new Promise(r=>setTimeout(r,15000))])");await pg.wait_for_timeout(300)
-        r=await pg.evaluate('''()=>({width:innerWidth,scrollWidth:document.documentElement.scrollWidth,mathErrors:document.querySelectorAll('merror').length,figures:document.querySelectorAll('main figure').length,brokenImages:[...document.querySelectorAll('main figure img')].filter(i=>!(i.complete&&i.naturalWidth>0)).map(i=>i.getAttribute('src')),fonts:[...document.fonts].map(f=>f.family+':'+f.status),blocks:document.querySelectorAll('.block').length,details:document.querySelectorAll('details').length,badAnchors:[...document.querySelectorAll('a[href^="#"]')].filter(a=>!document.getElementById(decodeURIComponent(a.hash.slice(1)))).map(a=>a.hash),rawDollar:[...document.querySelectorAll('main p,main li,main td,main figcaption')].filter(e=>/\\$/.test(e.textContent)).length})''')
+        r=await pg.evaluate('''()=>({width:innerWidth,scrollWidth:document.documentElement.scrollWidth,mathErrors:document.querySelectorAll('merror').length,figures:document.querySelectorAll('main figure').length,brokenImages:[...document.querySelectorAll('main figure img')].filter(i=>!(i.complete&&i.naturalWidth>0)).map(i=>i.getAttribute('src')),fonts:[...document.fonts].map(f=>f.family+':'+f.status),blocks:document.querySelectorAll('.block').length,details:document.querySelectorAll('details').length,badAnchors:[...document.querySelectorAll('a[href^="#"]')].filter(a=>!document.getElementById(decodeURIComponent(a.hash.slice(1)))).map(a=>a.hash),rawDollar:[...document.querySelectorAll('main p,main li,main td,main figcaption')].filter(e=>/\\$/.test(e.textContent)).length,mathOverflow:[...document.querySelectorAll('main .display.math')].filter(e=>e.scrollWidth>e.clientWidth+2).map(e=>e.textContent.trim().slice(0,30))})''')
         await pg.screenshot(path=str(outdir/'top.png'))
         for a in anchors:
             await pg.locator(f'[id="{a}"]').evaluate('e=>e.scrollIntoView({block:"start"})');await pg.wait_for_timeout(150);await pg.screenshot(path=str(outdir/f'{a}.png'))
@@ -50,4 +50,6 @@ async def main():
         r['errors']=err;await b.close();return r
 r=asyncio.run(main());srv.shutdown()
 ok=r['scrollWidth']<=r['width'] and not r['mathErrors'] and not r['brokenImages'] and all(s.endswith('loaded') for s in r['fonts']) and not r['badAnchors'] and not r['rawDollar'] and r.get('lightbox',True) and r['allExpanded'] and not r['expandedOverflow'] and r['allCollapsed'] and r['narrowDesktop']['sw']<=r['narrowDesktop']['w'] and not r['errors'] and all(v not in (0,False) for v in r.get('reader',{}).values())
-r['PASS']=ok;(outdir/'qa.json').write_text(json.dumps(r,ensure_ascii=False,indent=1));print(json.dumps(r,ensure_ascii=False))
+r['PASS']=ok
+if r['mathOverflow']:print(f"⚠ {len(r['mathOverflow'])} 个行间公式超出版面要横向滚动（新写的讲义要拆成多行，做到 0）",file=sys.stderr)
+(outdir/'qa.json').write_text(json.dumps(r,ensure_ascii=False,indent=1));print(json.dumps(r,ensure_ascii=False))

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """只列出课程目录里“还没处理过”的材料，代替 ls + shasum + 翻记录（省 token）。
 
-用法：new_materials.py <材料目录...>          打印新文件（SHA-256 前 12 位不在记录里）
+用法：new_materials.py <材料目录或文件...>          打印新文件（SHA-256 前 12 位不在记录里）
       new_materials.py --mark <材料目录...>   处理完后登记，下次不再列出
 已知指纹 = ROOT/制作记录/*.md 与 制作记录/归档/*.md 里出现的 12 位以上十六进制串 ∪ ROOT/制作记录/材料指纹.json。
 ROOT 同 reader/common.py（环境变量 LECTURE_ROOT）。
@@ -23,7 +23,7 @@ for md in [*REC.glob('*.md'), *REC.glob('归档/*.md')]:
 
 new = []
 for d in dirs:
-    for f in sorted(p for p in d.rglob('*') if p.is_file() and p.name not in SKIP and not p.name.startswith('~$')):
+    for f in sorted(p for p in ([d] if d.is_file() else d.rglob('*')) if p.is_file() and p.name not in SKIP and not p.name.startswith('~$')):
         h = hashlib.sha256(f.read_bytes()).hexdigest()[:12]
         if h not in known:
             new.append((f, h))
