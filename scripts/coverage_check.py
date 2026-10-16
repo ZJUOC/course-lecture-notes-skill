@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """核对覆盖表：教材的每个例题、习题、定义、定理……都在讲义里有位置，且这个位置真的存在。
 用法：coverage_check.py <制作记录.md> <底稿.html>
-覆盖表格式见 references/mainlines.md“例题驱动”：表头含“处理”“讲义位置”，每行一个教材条目。
+覆盖表格式见 references/mainlines.md“例题驱动”：表头含“处理”“讲义位置”，每行一个来源条目（课件题、作业、教材例题、习题、定义、定理……）。
 讲义位置写块标题的“类别 编号”（例 3、习题 5、P 2、定义 1、定理 2、结论 4）或小节 id（#fermat），可写多个。
 处理：讲解 / 习题 / 折叠 / 带过 / 同类。折叠、带过写所在小节 #id；同类写所依据的例题、结论（讲义里不出现）。
 打印 json：rows、by_type、by_handling、problems（必须为空）、length（篇幅提醒，不影响 PASS）。
@@ -55,7 +55,7 @@ def table(md):
         if set(''.join(cells)) <= set('-: '):
             continue
         d = dict(zip(head, cells))
-        rows.append((d.get('教材条目', cells[0]), d.get('类型', ''), d.get('讲义位置', ''), d.get('处理', '')))
+        rows.append((d.get('来源条目', d.get('教材条目', cells[0])), d.get('类型', ''), d.get('讲义位置', ''), d.get('处理', '')))
     return rows
 
 
